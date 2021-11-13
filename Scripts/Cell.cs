@@ -1,22 +1,22 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-using UnityEngine.UI;
 
 public class Cell : MonoBehaviour
 {
     public int posY, posX;
 
-    [SerializeField] Color moveColor, attackColor, standardColor, wallColor;
+    [SerializeField] Material moveMaterial, attackMaterial, standardMaterial, wallMaterial;
 
-    public bool free = true, wall = false, enemyCell = false, pathCell = false;
+    [HideInInspector] public bool free = true, enemyCell = false, pathCell = false, heroCell = false;
+    public bool wall = false;
 
-    Image image;
+    MeshRenderer mesh;
     Main main;
 
     States state = States.standard;
 
-    public Cell previousCell = null;
+    [HideInInspector] public Cell previousCell = null;
 
     enum States {
         move,
@@ -27,12 +27,12 @@ public class Cell : MonoBehaviour
 
     private void Start()
     {
-        image = GetComponent<Image>();
+        mesh = GetComponent<MeshRenderer>();
         main = Main.Instance;
         if (wall)
         {
             state = States.wall;
-            image.color = wallColor;
+            mesh.material = wallMaterial;
         }
     }
 
@@ -63,7 +63,7 @@ public class Cell : MonoBehaviour
         if (free && !wall)
         {
             state = States.move;
-            image.color = moveColor;
+            mesh.material = moveMaterial;
         }
     }
 
@@ -72,7 +72,7 @@ public class Cell : MonoBehaviour
         if (!wall)
         {
             state = States.attack;
-            image.color = attackColor;
+            mesh.material = attackMaterial;
         }
     }
 
@@ -81,7 +81,7 @@ public class Cell : MonoBehaviour
         if (!wall)
         {
             state = States.standard;
-            image.color = standardColor;
+            mesh.material = standardMaterial;
         }
     }
 }

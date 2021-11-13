@@ -122,10 +122,12 @@ public class Main : MonoBehaviour
         {
             cell.free = true;
             cell.enemyCell = false;
+            cell.heroCell = false;
         }
         for (int i = 0; i < heroes.Count; i++)
         {
             GetCell(heroes[i].posX, heroes[i].posY).free = false;
+            GetCell(heroes[i].posX, heroes[i].posY).heroCell = true;
         }
         for (int i = 0; i < enemies.Count; i++)
         {

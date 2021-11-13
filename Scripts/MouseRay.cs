@@ -6,6 +6,8 @@ public class MouseRay : MonoBehaviour
 {
     Main main;
 
+    [SerializeField] LayerMask layerMask;
+
     private void Start()
     {
         main = Main.Instance;
@@ -14,9 +16,13 @@ public class MouseRay : MonoBehaviour
     private void Update()
     {
         Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
-
         RaycastHit hit;
-        if(Physics.Raycast(ray, out hit))
+        if (Physics.Raycast(ray, out hit, 1000, layerMask))
+        {
+            if (Input.GetMouseButtonDown(0))
+                hit.collider.gameObject.GetComponent<Cell>().MouseDown();
+        }
+        if (Physics.Raycast(ray, out hit))
         {
             Hero heroOnMouseEnter = hit.collider.gameObject.GetComponent<Hero>();
             if (heroOnMouseEnter)

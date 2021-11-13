@@ -45,7 +45,12 @@ public class Pathfinding : MonoBehaviour
                     if (main.GetCell(moveCells[j, X] + parentCells[i].posX, moveCells[j, Y] + parentCells[i].posY) != null)
                     {
                         Cell childCell = main.GetCell(moveCells[j, X] + parentCells[i].posX, moveCells[j, Y] + parentCells[i].posY);
-                        if (!childCell.wall && !childCell.enemyCell && childCell.previousCell == null)
+                        if(childCell == targetCell)
+                        {
+                            childCell.previousCell = parentCells[i];
+                            return GetPathCell();
+                        }
+                        else if (!childCell.wall && childCell.free && childCell.previousCell == null)
                         {
                             childCell.previousCell = parentCells[i];
                             waitingCells.Add(childCell);
@@ -54,11 +59,6 @@ public class Pathfinding : MonoBehaviour
                 }
                 waitingCells.Remove(parentCells[i]);
                 checkedCells.Add(parentCells[i]);
-            }
-            foreach (Cell cell in waitingCells)
-            {
-                if (cell == targetCell)
-                    return GetPathCell();
             }
         }
         return Vector2.positiveInfinity;
