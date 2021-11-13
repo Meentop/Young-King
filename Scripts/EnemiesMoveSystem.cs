@@ -16,11 +16,6 @@ public class EnemiesMoveSystem : MonoBehaviour
     private void Start()
     {
         main = Main.Instance;
-        //ниже костыль, надо сделать это в виде отдельного метода в Enemy
-        foreach (Enemy enemy in main.enemies)
-        {
-            enemy.target = main.heroes[Random.Range(0, main.heroes.Count)];
-        }
     }
 
     [SerializeField] const float TimeBetweenEnemyMoves = 1f;

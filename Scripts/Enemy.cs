@@ -55,7 +55,6 @@ public abstract class Enemy : Creature
     public void TargetNearestHero()
     {
         //now this function is target random hero
-        Debug.Log(transform.name);
         target = main.heroes[Random.Range(0, main.heroes.Count)];
     }
 
@@ -64,6 +63,8 @@ public abstract class Enemy : Creature
     public void CheckStatus()
     {
         SetCurrentAllCells();
+        if (target == null)
+            TargetNearestHero();
         CheckAttack();
         CheckMovement();
     }
@@ -87,16 +88,22 @@ public abstract class Enemy : Creature
     void CheckMovement()
     {
         int[,] moveCells = ConvertStringArrayToIntArray(moveCellsStr);
-        Vector2 path = pathfinding.GetPath(main.GetCell(posX, posY), main.GetCell(target.posX, target.posY), moveCells);
-        if ((path.x <= 9 && path.x >= 0) && (path.y <= 9 && path.y >= 0))
+        for (int i = 0; i < main.heroes.Count; i++)
         {
-            SetImportanceAndStatus(MovementImportnce, "movement");
-            this.path = path;
+            Vector2 path = pathfinding.GetPath(main.GetCell(posX, posY), main.GetCell(target.posX, target.posY), moveCells);
+            if ((path.x <= 9 && path.x >= 0) && (path.y <= 9 && path.y >= 0))
+            {
+                SetImportanceAndStatus(MovementImportnce, "movement");
+                this.path = path;
+                return;
+            }
+            else
+            {
+                Debug.Log("путь не найден " + gameObject.name);
+                TargetNearestHero();
+            }
         }
-        else
-        {
-            Debug.Log("путь не найден " + gameObject.name);
-        }
+        
     }
 
 

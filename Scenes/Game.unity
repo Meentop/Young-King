@@ -1291,7 +1291,7 @@ MonoBehaviour:
   enemyCell: 0
   pathCell: 0
   heroCell: 0
-  wall: 1
+  wall: 0
   previousCell: {fileID: 0}
 --- !u!1 &107464841
 GameObject:
@@ -2547,7 +2547,7 @@ MonoBehaviour:
   enemyCell: 0
   pathCell: 0
   heroCell: 0
-  wall: 1
+  wall: 0
   previousCell: {fileID: 0}
 --- !u!1 &413600719
 GameObject:
@@ -5698,7 +5698,7 @@ MonoBehaviour:
   enemyCell: 0
   pathCell: 0
   heroCell: 0
-  wall: 1
+  wall: 0
   previousCell: {fileID: 0}
 --- !u!1 &744286706
 GameObject:
@@ -6273,7 +6273,7 @@ MonoBehaviour:
   enemyCell: 0
   pathCell: 0
   heroCell: 0
-  wall: 1
+  wall: 0
   previousCell: {fileID: 0}
 --- !u!1 &808390998
 GameObject:
@@ -7598,7 +7598,7 @@ MonoBehaviour:
   enemyCell: 0
   pathCell: 0
   heroCell: 0
-  wall: 1
+  wall: 0
   previousCell: {fileID: 0}
 --- !u!1 &1006929156
 GameObject:
@@ -9838,7 +9838,7 @@ MonoBehaviour:
   enemyCell: 0
   pathCell: 0
   heroCell: 0
-  wall: 1
+  wall: 0
   previousCell: {fileID: 0}
 --- !u!1 &1329232239
 GameObject:
@@ -13547,7 +13547,7 @@ MonoBehaviour:
   enemyCell: 0
   pathCell: 0
   heroCell: 0
-  wall: 1
+  wall: 0
   previousCell: {fileID: 0}
 --- !u!1 &1756689112
 GameObject:
@@ -13889,7 +13889,7 @@ MonoBehaviour:
   enemyCell: 0
   pathCell: 0
   heroCell: 0
-  wall: 1
+  wall: 0
   previousCell: {fileID: 0}
 --- !u!1 &1792535521
 GameObject:
@@ -14009,7 +14009,7 @@ MonoBehaviour:
   enemyCell: 0
   pathCell: 0
   heroCell: 0
-  wall: 1
+  wall: 0
   previousCell: {fileID: 0}
 --- !u!1 &1806767609
 GameObject:
@@ -14489,7 +14489,7 @@ MonoBehaviour:
   enemyCell: 0
   pathCell: 0
   heroCell: 0
-  wall: 1
+  wall: 0
   previousCell: {fileID: 0}
 --- !u!1 &1868177432
 GameObject:

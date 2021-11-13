@@ -38,6 +38,14 @@ public class Main : MonoBehaviour
             hero.SetCurrentAllCells();
     }
 
+    private void Update()
+    {
+        if(Input.GetKeyDown(KeyCode.Space) && heroTurn)
+        {
+            EndStep();
+        }
+    }
+
     List<Hero> GetAllHeroes()
     {
         GameObject[] heroesGameObj = GameObject.FindGameObjectsWithTag("Hero");
@@ -67,20 +75,35 @@ public class Main : MonoBehaviour
         }
         stepText.text = step.ToString();
         SetFreeAllCells();
+        if (enemies.Count == 0)
+            Debug.Log("Win");
+        else if (heroes.Count == 0)
+            Debug.Log("Lose");
         if (heroTurn)
         {
-            stepText.color = Color.white;
-            heroTurnImg.SetActive(true);
-            enemyTurnImg.SetActive(false);
+            EnableHeroIcon();
         }
         else
         {
-            stepText.color = Color.red;
-            heroTurnImg.SetActive(false);
-            enemyTurnImg.SetActive(true);
+            EnableEnemyIcon();
             StartCoroutine(enemiesMoveSystem.StartEnemiesMove());
         }
     }
+
+    void EnableHeroIcon()
+    {
+        stepText.color = Color.white;
+        heroTurnImg.SetActive(true);
+        enemyTurnImg.SetActive(false);
+    }
+
+    void EnableEnemyIcon()
+    {
+        stepText.color = Color.red;
+        heroTurnImg.SetActive(false);
+        enemyTurnImg.SetActive(true);
+    }
+
 
     public Cell GetCell(int x, int y)
     {
