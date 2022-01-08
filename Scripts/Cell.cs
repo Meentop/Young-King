@@ -17,6 +17,7 @@ public class Cell : MonoBehaviour
     States state = States.standard;
 
     [HideInInspector] public Cell previousCell = null;
+    HeroPanel heroPanel;
 
     enum States {
         move,
@@ -27,6 +28,7 @@ public class Cell : MonoBehaviour
 
     private void Start()
     {
+        heroPanel = HeroPanel.Instance;
         mesh = GetComponent<MeshRenderer>();
         main = Main.Instance;
         if (wall)
@@ -52,8 +54,10 @@ public class Cell : MonoBehaviour
             }
             else if (state == States.standard)
             {
-                if (free)
+                if (!heroCell)
                     main.SetNoactiveAllHeroes();
+                heroPanel.OffHeroPanel();
+                main.ClearActiveSpells();
             }
         }
     }

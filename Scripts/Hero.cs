@@ -6,19 +6,19 @@ public abstract class Hero : Creature
 {
     [HideInInspector] public bool active = false, isMoveCellsActive = false, isAttackCellsActive = false;
 
+    [Header("Spells")]
+    public Sprite heroFront;
+    public Spell[] spells = new Spell[3];
+    protected HeroPanel heroPanel;
+
     protected override void Start()
     {
-        base.Start(); 
-    }
-
-    protected override void Awake()
-    {
-        base.Awake();
-    }
-
-    protected override void Update()
-    {
-        base.Update();
+        base.Start();
+        heroPanel = HeroPanel.Instance;
+        for (int i = 0; i < 3; i++)
+        {
+            spells[i].curRecoveryDuration = spells[i].recoveryDuration;
+        } 
     }
 
     public override void GetDamage(int damage)
@@ -26,7 +26,8 @@ public abstract class Hero : Creature
         hp -= damage;
         if (hp <= 0)
         {
-            main.heroes.Remove(GetComponent<Hero>());
+            main.creatures.Remove(this);
+            main.heroes.Remove(this);
             Destroy(gameObject);
         }
         UpdateHPInfo();
@@ -34,10 +35,11 @@ public abstract class Hero : Creature
 
     public void MouseDown(bool leftButton)
     {
-        if (!isMove && main.heroTurn)
+        if (!isMove && main.heroTurn && !HasEffect(Effect.stunned))
         {
             main.SetNoactiveAllHeroes();
             active = true;
+            heroPanel.UpdateHeroPanel(this);
             if (leftButton)
                 OnMoveCells();
             else
@@ -45,7 +47,7 @@ public abstract class Hero : Creature
         }
     }
 
-    void OnMoveCells()
+    protected void OnMoveCells()
     {
         isMoveCellsActive = true;
         isAttackCellsActive = false;
@@ -56,7 +58,7 @@ public abstract class Hero : Creature
         }
     }
 
-    void OnAttackCells()
+    protected void OnAttackCells()
     {
         if (!wasToAttack)
         {
@@ -76,4 +78,24 @@ public abstract class Hero : Creature
         isAttackCellsActive = false;
         active = false;
     }
+
+
+    public abstract void StartQSpell();
+
+    public abstract void StartWSpell();
+
+    public abstract void StartESpell();
+}
+
+
+[System.Serializable]
+public class Spell 
+{
+    public Sprite sprite;
+    public string description;
+    public int recoveryDuration;
+    public int curRecoveryDuration;
+    public int cost;
+    public bool used;
+    public bool active;
 }

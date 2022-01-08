@@ -4,15 +4,23 @@ using UnityEngine;
 
 public abstract class Enemy : Creature
 {
+    [Header("Enemy")]
     public Hero target;
 
-    public string status;
+    public Status status;
 
     public int importance = 0;
 
     EnemiesMoveSystem enemiesMoveSystem;
 
     Pathfinding pathfinding;
+
+    public enum Status
+    {
+        nothing,
+        attack,
+        movement
+    }
 
     protected override void Start()
     {
@@ -31,7 +39,7 @@ public abstract class Enemy : Creature
 
     protected override IEnumerator ToDamage(Vector2 heroPos)
     {
-        yield return new WaitForSeconds(durationAnimationAttackInSeconds);
+        yield return new WaitForSeconds(durationAnimationAttack);
         main.GetHeroOnCell((int)heroPos.x, (int)heroPos.y).GetDamage(damage);
         wasToAttack = true;
         enemiesMoveSystem.EndEnemiesMove();
@@ -42,7 +50,8 @@ public abstract class Enemy : Creature
         hp -= damage;
         if (hp <= 0)
         {
-            main.enemies.Remove(GetComponent<Enemy>());
+            main.creatures.Remove(this);
+            main.enemies.Remove(this);
             Destroy(gameObject);
         }
         main.EndStep();
@@ -62,11 +71,14 @@ public abstract class Enemy : Creature
 
     public void CheckStatus()
     {
-        SetCurrentAllCells();
-        if (target == null)
-            TargetNearestHero();
-        CheckAttack();
-        CheckMovement();
+        if (!HasEffect(Effect.stunned))
+        {
+            SetCurrentAllCells();
+            if (target == null)
+                TargetNearestHero();
+            CheckAttack();
+            CheckMovement();
+        }
     }
 
     void CheckAttack()
@@ -77,7 +89,7 @@ public abstract class Enemy : Creature
             {
                 if (main.CheckHeroOnCell(attackCells[i, X], attackCells[i, Y]))
                 {
-                    SetImportanceAndStatus(AttackImportance, "attack");
+                    SetImportanceAndStatus(AttackImportance, Status.attack);
                     return;
                 }
             }
@@ -93,7 +105,7 @@ public abstract class Enemy : Creature
             Vector2 path = pathfinding.GetPath(main.GetCell(posX, posY), main.GetCell(target.posX, target.posY), moveCells);
             if ((path.x <= 9 && path.x >= 0) && (path.y <= 9 && path.y >= 0))
             {
-                SetImportanceAndStatus(MovementImportnce, "movement");
+                SetImportanceAndStatus(MovementImportnce, Status.movement);
                 this.path = path;
                 return;
             }
@@ -109,9 +121,9 @@ public abstract class Enemy : Creature
 
     public void ApplyStatus()
     {
-        if (status == "attack")
+        if (status == Status.attack)
             ApplyAttack();
-        else if (status == "movement")
+        else if (status == Status.movement)
             ApplyMovement();
         else if (importance == 0)
             enemiesMoveSystem.EndEnemiesMove();
@@ -147,10 +159,10 @@ public abstract class Enemy : Creature
     public void ClearStatusAndImportance()
     {
         importance = 0;
-        status = "";
+        status = Status.nothing;
     }
 
-    public void SetImportanceAndStatus(int importance, string status)
+    public void SetImportanceAndStatus(int importance, Status status)
     {
         if (importance > this.importance)
         {
@@ -163,7 +175,7 @@ public abstract class Enemy : Creature
         }
     }
 
-    void OverrideImportanceAndStatus(int importance, string status)
+    void OverrideImportanceAndStatus(int importance, Status status)
     {
         this.importance = importance;
         this.status = status;

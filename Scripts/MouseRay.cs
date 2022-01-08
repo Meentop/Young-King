@@ -8,6 +8,8 @@ public class MouseRay : MonoBehaviour
 
     [SerializeField] LayerMask layerMask;
 
+    [SerializeField] DisappearingText stunnedText;
+
     private void Start()
     {
         main = Main.Instance;
@@ -27,6 +29,12 @@ public class MouseRay : MonoBehaviour
             Hero heroOnMouseEnter = hit.collider.gameObject.GetComponent<Hero>();
             if (heroOnMouseEnter)
             {
+                if(Input.GetMouseButtonDown(0) || Input.GetMouseButtonDown(1))
+                {
+                    if (heroOnMouseEnter.HasEffect(Effect.stunned))
+                        stunnedText.ShowText(2f, 5f); 
+                }
+
                 if (Input.GetMouseButtonDown(0))
                 {
                     if (heroOnMouseEnter.active && heroOnMouseEnter.isMoveCellsActive)

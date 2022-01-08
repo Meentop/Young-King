@@ -5,11 +5,7 @@ using UnityEngine.UI;
 
 public abstract class Creature : MonoBehaviour
 {
-    public int posX, posY, damage, hp;
-
-    [SerializeField] Text hpText;
-
-    [SerializeField] protected string[] moveCellsStr, attackCellsStr;
+    [HideInInspector] public int posX, posY;
 
     public int[,] moveCells, attackCells;
 
@@ -44,15 +40,59 @@ public abstract class Creature : MonoBehaviour
         Movement();
     }
 
+    //Movement
+
+    [Header("Movement")]
+    [SerializeField] protected string[] moveCellsStr;
+
+    protected bool isMove = false;
+
+    [SerializeField] protected float runSpeed = 5f, walkSpeed = 1.5f;
+
+    protected float moveSpeed;
+
+    [SerializeField] protected float angleOffset = 0;
+
     protected virtual void Movement()
     {
         if (isMove)
         {
-            skinsAnimator.SetBool("isMove", true);
             Vector3 target = new Vector3(posX, transform.position.y, posY);
             transform.position = Vector3.MoveTowards(transform.position, target, moveSpeed * Time.deltaTime);
             if (transform.position.x == posX && transform.position.z == posY)
                 EndMovement();
+        }
+    }
+
+    public virtual void StartMovement(int futurePosX, int futurePosY)
+    {
+        Vector2 futurePosition = new Vector2(futurePosX, futurePosY);
+        transform.rotation = Quaternion.Euler(transform.rotation.x, GetDirectionAngle(transform.position, futurePosition), transform.rotation.z);
+        SetMoveOrWalk(Vector2.Distance(new Vector2(this.posX, this.posY), futurePosition));
+        skinsAnimator.SetBool("isMove", true);
+        this.posX = futurePosX;
+        this.posY = futurePosY;
+        isMove = true;
+        main.SetNoactiveAllHeroes();
+        main.SetFreeAllCells();
+    }
+
+    protected float GetDirectionAngle(Vector3 startPosition, Vector2 futurePosition)
+    {
+        return (Mathf.Atan2(futurePosition.y - startPosition.z, futurePosition.x - startPosition.x) * (180 / Mathf.PI) * -1) + angleOffset;
+    }
+
+    void SetMoveOrWalk(float distance)
+    {
+        if (distance > 1.5f)
+        {
+            skinsAnimator.SetBool("isWalk", false);
+            moveSpeed = runSpeed;
+        }
+        else
+        {
+            skinsAnimator.SetBool("isWalk", true);
+            moveSpeed = walkSpeed;
         }
     }
 
@@ -64,6 +104,46 @@ public abstract class Creature : MonoBehaviour
         isMove = false;
     }
 
+    //HP
+
+    [Header("HP")]
+    public int hp;
+
+    [SerializeField] Text hpText;
+
+    public abstract void GetDamage(int damage);
+
+    public void UpdateHPInfo()
+    {
+        hpText.text = hp.ToString();
+    }
+
+    //Attack
+
+    [Header("Attack")]
+    [SerializeField] protected string[] attackCellsStr;
+
+    public int damage;
+
+    [HideInInspector] public bool wasToAttack = false;
+
+    [SerializeField] protected float durationAnimationAttack = 0.01f;
+
+    public virtual void StartAttack(Vector2 enemyPos)
+    {
+        transform.rotation = Quaternion.Euler(transform.rotation.x, GetDirectionAngle(transform.position, enemyPos), transform.rotation.z);
+        skinsAnimator.SetTrigger("Attack");
+        StartCoroutine(ToDamage(enemyPos));
+    }
+
+    protected virtual IEnumerator ToDamage(Vector2 enemyPos)
+    {
+        yield return new WaitForSeconds(durationAnimationAttack);
+        main.GetEnemyOnCell((int)enemyPos.x, (int)enemyPos.y).GetDamage(damage);
+        wasToAttack = true;
+    }
+
+    //Cells
 
     public int[,] ConvertStringArrayToIntArray(string[] cellsStr)
     {
@@ -102,15 +182,7 @@ public abstract class Creature : MonoBehaviour
         SetCurrentCells(ref attackCells);
     }
 
-
-    public abstract void GetDamage(int damage);
-
-    public void UpdateHPInfo()
-    {
-        hpText.text = hp.ToString();
-    }
-
-    
+    //Show
 
     public void Show()
     {
@@ -123,57 +195,48 @@ public abstract class Creature : MonoBehaviour
         }
     }
 
+    //Effects
 
-    public bool wasToAttack = false;
-    [SerializeField] protected float durationAnimationAttackInSeconds = 0.01f;
-    public virtual void StartAttack(Vector2 enemyPos)
+    public CreatureEffector effectsPanel;
+
+    public List<ActiveEffect> effects;
+
+    public void AddEffect(Effect effect, int duration)
     {
-        transform.rotation = Quaternion.Euler(transform.rotation.x, GetDirectionAngle(transform.position, enemyPos), transform.rotation.z);
-        skinsAnimator.SetTrigger("Attack");
-        StartCoroutine(ToDamage(enemyPos));
-    }
-
-    protected float GetDirectionAngle(Vector3 startPosition, Vector2 futurePosition)
-    {
-        return (Mathf.Atan2(futurePosition.y - startPosition.z, futurePosition.x - startPosition.x) * (180 / Mathf.PI) * -1);
-    }
-
-    protected virtual IEnumerator ToDamage(Vector2 enemyPos)
-    {
-        yield return new WaitForSeconds(durationAnimationAttackInSeconds);
-        main.GetEnemyOnCell((int)enemyPos.x, (int)enemyPos.y).GetDamage(damage);
-        wasToAttack = true;
-    }
-
-
-    protected bool isMove = false;
-
-    [SerializeField] protected float runSpeed = 5f, walkSpeed = 1.5f;
-
-    protected float moveSpeed;
-    public virtual void StartMovement(int futurePosX, int futurePosY)
-    {
-        Vector2 futurePosition = new Vector2(futurePosX, futurePosY);
-        transform.rotation = Quaternion.Euler(transform.rotation.x, GetDirectionAngle(transform.position, futurePosition), transform.rotation.z);
-        SetMoveOrWalk(Vector2.Distance(new Vector2(this.posX, this.posY), futurePosition));
-        this.posX = futurePosX;
-        this.posY = futurePosY;
-        isMove = true;
-        main.SetNoactiveAllHeroes();
-        main.SetFreeAllCells();
-    }
-
-    void SetMoveOrWalk(float distance)
-    {
-        if (distance > 1.5f)
+        if (!HasEffect(effect))
         {
-            skinsAnimator.SetBool("isWalk", false);
-            moveSpeed = runSpeed;
+            effects.Add(new ActiveEffect(effect, duration));
         }
         else
         {
-            skinsAnimator.SetBool("isWalk", true);
-            moveSpeed = walkSpeed;
+            for (int i = 0; i < effects.Count; i++)
+            {
+                if (effects[i].effect == effect)
+                    effects[i].duration += duration;
+            }
         }
+    }
+
+    public bool HasEffect(Effect testedEffect)
+    {
+        foreach (ActiveEffect effect in effects)
+        {
+            if (effect.effect == testedEffect)
+                return true;
+        }
+        return false;
+    }
+}
+
+[System.Serializable]
+public class ActiveEffect 
+{
+    public Effect effect;
+    public int duration;
+
+    public ActiveEffect(Effect effect, int duration)
+    {
+        this.effect = effect;
+        this.duration = duration;
     }
 }

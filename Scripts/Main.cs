@@ -6,8 +6,8 @@ using UnityEngine.UI;
 public class Main : MonoBehaviour
 {
     public List<Hero> heroes;
-
     public List<Enemy> enemies;
+    public List<Creature> creatures;
 
     [SerializeField] Cell[] cells;
 
@@ -22,16 +22,19 @@ public class Main : MonoBehaviour
     public static Main Instance;
 
     EnemiesMoveSystem enemiesMoveSystem;
+    HeroPanel heroPanel;
 
     private void Awake()
     {
         Instance = this;
-        heroes = GetAllHeroes();
-        enemies = GetAllEnemies();
+        heroes.AddRange(FindObjectsOfType<Hero>());
+        enemies.AddRange(FindObjectsOfType<Enemy>());
+        creatures.AddRange(FindObjectsOfType<Creature>());
     }
 
     private void Start()
     {
+        heroPanel = HeroPanel.Instance;
         enemiesMoveSystem = EnemiesMoveSystem.Instance;
         SetFreeAllCells();
         foreach (Hero hero in heroes)
@@ -42,26 +45,9 @@ public class Main : MonoBehaviour
     {
         if(Input.GetKeyDown(KeyCode.Space) && heroTurn)
         {
+            SetNoactiveAllHeroes();
             EndStep();
         }
-    }
-
-    List<Hero> GetAllHeroes()
-    {
-        GameObject[] heroesGameObj = GameObject.FindGameObjectsWithTag("Hero");
-        List<Hero> heroes = new List<Hero>();
-        for (int i = 0; i < heroesGameObj.Length; i++)
-            heroes.Add(heroesGameObj[i].GetComponent<Hero>());
-        return heroes;
-    }
-
-    List<Enemy> GetAllEnemies()
-    {
-        GameObject[] enemiesGameObj = GameObject.FindGameObjectsWithTag("Enemy");
-        List<Enemy> enemies = new List<Enemy>();
-        for (int i = 0; i < enemiesGameObj.Length; i++)
-            enemies.Add(enemiesGameObj[i].GetComponent<Enemy>());
-        return enemies;
     }
 
     public void EndStep()
@@ -75,14 +61,17 @@ public class Main : MonoBehaviour
         }
         stepText.text = step.ToString();
         SetFreeAllCells();
+        heroPanel.OffHeroPanel();
+        ClearActiveSpells();
+        MinusSpellsRecovery();
+        MinusEffectsDuration();
+        UpdateEffectsPanels();
         if (enemies.Count == 0)
             Debug.Log("Win");
         else if (heroes.Count == 0)
             Debug.Log("Lose");
         if (heroTurn)
-        {
             EnableHeroIcon();
-        }
         else
         {
             EnableEnemyIcon();
@@ -133,6 +122,11 @@ public class Main : MonoBehaviour
         {
             hero.SetNoactive();
         }
+        SetStandardAllCells();
+    }
+
+    public void SetStandardAllCells()
+    {
         foreach (Cell cell in cells)
         {
             cell.SetStandard();
@@ -147,16 +141,12 @@ public class Main : MonoBehaviour
             cell.enemyCell = false;
             cell.heroCell = false;
         }
+        for (int i = 0; i < creatures.Count; i++)
+            GetCell(creatures[i].posX, creatures[i].posY).free = false;
         for (int i = 0; i < heroes.Count; i++)
-        {
-            GetCell(heroes[i].posX, heroes[i].posY).free = false;
             GetCell(heroes[i].posX, heroes[i].posY).heroCell = true;
-        }
         for (int i = 0; i < enemies.Count; i++)
-        {
-            GetCell(enemies[i].posX, enemies[i].posY).free = false;
             GetCell(enemies[i].posX, enemies[i].posY).enemyCell = true;
-        }
     }
 
     public Hero GetActiveHero()
@@ -197,6 +187,7 @@ public class Main : MonoBehaviour
             return true;
     }
 
+    //Pathfinding
 
     public void ClearPreviousCells()
     {
@@ -223,6 +214,59 @@ public class Main : MonoBehaviour
         foreach (Hero hero in heroes)
         {
             hero.wasToAttack = false;
+        }
+    }
+
+    //Spells
+
+    public void ClearActiveSpells()
+    {
+        foreach (Hero hero in heroes)
+        {
+            for (int i = 0; i < 3; i++)
+            {
+                hero.spells[i].active = false;
+            }
+        }
+    }
+
+    public void MinusSpellsRecovery()
+    {
+        foreach (Hero hero in heroes)
+        {
+            for (int i = 0; i < 3; i++)
+            {
+                if (hero.spells[i].used)
+                    hero.spells[i].curRecoveryDuration--;
+                if (hero.spells[i].curRecoveryDuration == 0)
+                {
+                    hero.spells[i].curRecoveryDuration = hero.spells[i].recoveryDuration;
+                    hero.spells[i].used = false;
+                }
+            }
+        }
+    }
+
+    //Effects
+
+    void MinusEffectsDuration()
+    {
+        foreach (Creature creature in creatures)
+        {
+            for (int i = 0; i < creature.effects.Count; i++)
+            {
+                creature.effects[i].duration--;
+                if (creature.effects[i].duration == 0)
+                    creature.effects.Remove(creature.effects[i]);
+            }
+        }
+    }
+
+    void UpdateEffectsPanels()
+    {
+        foreach (Creature creature in creatures)
+        {
+            creature.effectsPanel.UpdateEffectsPanel();
         }
     }
 }
